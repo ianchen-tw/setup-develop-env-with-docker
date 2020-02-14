@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 # This dockerfile is intended to be used by students
 import sys
 import subprocess
@@ -16,18 +14,44 @@ parser.add_argument( '-t','--test-src-fld',
                     nargs=1,
                     default=[None],
                     help="Append different test folder")
+parser.add_argument( '-u','--username',default="student",)
+parser.add_argument( '--hostname', default='compiler-s20')
+parser.add_argument( '--homedir', default='/home/student')
+parser.add_argument( '-i','--imagename', default='compiler-s20-env')
+
 args = parser.parse_args()
 test_src_fld = args.test_src_fld[0]
+DOCKER_USER_NAME = args.username
+DOCKER_HOST_NAME = args.hostname
+DOCKER_IMG_NAME = args.imagename
+dk_home = args.homedir
 
 dirpath = os.path.dirname(os.path.abspath(__file__))
 
-DOCKER_USER_NAME = 'yian'
-DOCKER_HOST_NAME = 'docker-env'
-DOCKER_IMG_NAME = 'my-test-env'
-
-dk_home = f'home/{DOCKER_USER_NAME}'
+recurisive_docker_msg='''
+    .
+    .
+   . ;.
+    .;
+     ;;.
+   ;.;;
+   ;;;;.
+   ;;;;;
+   ;;;;;                                       
+   ;;;;;
+   ;;;;;    Don't activate environment twice QQ
+   ;;;;;
+ ..;;;;;..  You are already inside our docker environment, see?
+  ':::::'
+    ':`
+'''
 
 def main():
+    # prevent student to 
+    if "STATUS_DOCKER_ACTIVATED" in os.environ:
+        print(recurisive_docker_msg)
+        sys.exit(0)
+
     # print(f'dirpath :{dirpath}')
     cwd = os.getcwd()
 
@@ -45,7 +69,7 @@ def main():
         '-e', f'LOCAL_USER_ID={os.getuid()}',
         '-e', f'LOCAL_USER_GID={os.getgid()}',
         '-v', f'{os.getcwd()}:/home/{DOCKER_USER_NAME}',
-        f'-v {os.path.abspath(test_src_fld)}:/{dk_home}/test' if test_src_fld else '',
+        f'-v {os.path.abspath(test_src_fld)}:{dk_home}/test' if test_src_fld else '',
 
         # bash history file
         '-v', f'{dirpath}/.history/docker_bash_history:/{dk_home}/.bash_history',
