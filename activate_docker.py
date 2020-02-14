@@ -10,17 +10,12 @@ assert sys.version_info >= (3, 4)
 
 parser = argparse.ArgumentParser(
     description='Activate homework environment for compiler-s20')
-parser.add_argument( '-t','--test-src-fld',
-                    nargs=1,
-                    default=[None],
-                    help="Append different test folder")
 parser.add_argument( '-u','--username',default="student",)
 parser.add_argument( '--hostname', default='compiler-s20')
 parser.add_argument( '--homedir', default='/home/student')
 parser.add_argument( '-i','--imagename', default='compiler-s20-env')
 
 args = parser.parse_args()
-test_src_fld = args.test_src_fld[0]
 DOCKER_USER_NAME = args.username
 DOCKER_HOST_NAME = args.hostname
 DOCKER_IMG_NAME = args.imagename
@@ -59,9 +54,6 @@ def main():
     bash_his.parent.mkdir(exist_ok=True)
     bash_his.touch(exist_ok=True)
 
-    if test_src_fld and not Path(test_src_fld).exists():
-        raise FileNotFoundError(f"Folder: `{test_src_fld}` doesnt exist.")
-
     docker_options = [
         'docker', 'run',
         '--rm', '-it',
@@ -69,7 +61,6 @@ def main():
         '-e', f'LOCAL_USER_ID={os.getuid()}',
         '-e', f'LOCAL_USER_GID={os.getgid()}',
         '-v', f'{os.getcwd()}:/home/{DOCKER_USER_NAME}',
-        f'-v {os.path.abspath(test_src_fld)}:{dk_home}/test' if test_src_fld else '',
 
         # bash history file
         '-v', f'{dirpath}/.history/docker_bash_history:/{dk_home}/.bash_history',
